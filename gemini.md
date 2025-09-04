@@ -70,3 +70,4 @@ concerns.
 f. Code Efficiency and Cleanliness: Adhere to coding best practices and clean architecture
 principles.
 g. State Management: Riverpod.
+

@@ -1,8 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:awesome_ayaflix/src/presentation/providers/movie_providers.dart';
+import 'package:awesome_ayaflix/src/presentation/screens/favorites_screen.dart';
 import 'package:awesome_ayaflix/src/presentation/widgets/movie_card_widget.dart';
+import 'package:awesome_ayaflix/src/presentation/widgets/movie_card_shimmer.dart';
 
 class MoviesScreen extends ConsumerStatefulWidget {
   const MoviesScreen({super.key});
@@ -13,6 +14,7 @@ class MoviesScreen extends ConsumerStatefulWidget {
 
 class _MoviesScreenState extends ConsumerState<MoviesScreen> {
   final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
@@ -26,14 +28,27 @@ class _MoviesScreenState extends ConsumerState<MoviesScreen> {
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+  void _onScroll() async {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      if (_isLoadingMore) return;
+
+      setState(() {
+        _isLoadingMore = true;
+      });
+
       final searchQuery = ref.read(searchQueryProvider);
       if (searchQuery.isEmpty) {
-        ref.read(popularMoviesProvider.notifier).fetchNextPage();
+        await ref.read(popularMoviesProvider.notifier).fetchNextPage();
       } else {
-        ref.read(searchMoviesProvider(searchQuery).notifier).fetchNextPage(searchQuery);
+        await ref
+            .read(searchMoviesProvider(searchQuery).notifier)
+            .fetchNextPage(searchQuery);
       }
+
+      setState(() {
+        _isLoadingMore = false;
+      });
     }
   }
 
@@ -45,44 +60,84 @@ class _MoviesScreenState extends ConsumerState<MoviesScreen> {
         : ref.watch(searchMoviesProvider(searchQuery));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ayaflix'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              onChanged: (query) {
-                ref.read(searchQueryProvider.notifier).setQuery(query);
-              },
-              decoration: InputDecoration(
-                hintText: 'Search movies...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverAppBar(
+            title: const Text('Ayaflix'),
+            floating: true,
+            pinned: true,
+            snap: false,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.favorite),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FavoritesScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(kToolbarHeight),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  style: const TextStyle(color: Colors.black),
+                  onChanged: (query) {
+                    ref.read(searchQueryProvider.notifier).setQuery(query);
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search movies...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
-      body: movies.when(
-        data: (movies) {
-          return GridView.builder(
-            controller: _scrollController,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.7,
-            ),
-            itemCount: movies.length,
-            itemBuilder: (context, index) {
-              final movie = movies[index];
-              return MovieCard(movie: movie);
+          movies.when(
+            data: (movies) {
+              return SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.7,
+                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  if (index == movies.length) {
+                    return _isLoadingMore
+                        ? const Center(child: CircularProgressIndicator())
+                        : const SizedBox.shrink();
+                  }
+                  final movie = movies[index];
+                  return MovieCard(movie: movie);
+                }, childCount: movies.length + 1),
+              );
             },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text(error.toString())),
+            loading: () {
+              return SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.7,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => const MovieCardShimmer(),
+                  childCount: 10,
+                ),
+              );
+            },
+            error: (error, stackTrace) {
+              return SliverToBoxAdapter(
+                child: Center(child: Text(error.toString())),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

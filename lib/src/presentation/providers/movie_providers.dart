@@ -1,9 +1,14 @@
 
+import 'package:awesome_ayaflix/src/data/datasources/local/movie_local_data_source.dart';
 import 'package:awesome_ayaflix/src/data/datasources/remote/dio_client.dart';
 import 'package:awesome_ayaflix/src/data/datasources/remote/movie_remote_data_source.dart';
 import 'package:awesome_ayaflix/src/data/repositories/movie_repository_impl.dart';
+import 'package:awesome_ayaflix/src/domain/entities/cast.dart';
 import 'package:awesome_ayaflix/src/domain/entities/movie.dart';
+import 'package:awesome_ayaflix/src/domain/entities/movie_detail.dart';
+import 'package:awesome_ayaflix/src/domain/entities/video.dart';
 import 'package:awesome_ayaflix/src/domain/repositories/movie_repository.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'movie_providers.g.dart';
@@ -19,8 +24,31 @@ MovieRemoteDataSource movieRemoteDataSource(ref) {
 }
 
 @riverpod
+MovieLocalDataSource movieLocalDataSource(ref) {
+  return MovieLocalDataSourceImpl(Hive.box('favorites'));
+}
+
+@riverpod
 MovieRepository movieRepository(ref) {
-  return MovieRepositoryImpl(ref.watch(movieRemoteDataSourceProvider));
+  return MovieRepositoryImpl(
+    ref.watch(movieRemoteDataSourceProvider),
+    ref.watch(movieLocalDataSourceProvider),
+  );
+}
+
+@riverpod
+Future<MovieDetail> movieDetail(ref, int movieId) {
+  return ref.watch(movieRepositoryProvider).getMovieDetail(movieId);
+}
+
+@riverpod
+Future<List<Cast>> movieCredits(ref, int movieId) {
+  return ref.watch(movieRepositoryProvider).getMovieCredits(movieId);
+}
+
+@riverpod
+Future<List<Video>> movieVideos(ref, int movieId) {
+  return ref.watch(movieRepositoryProvider).getMovieVideos(movieId);
 }
 
 @riverpod
@@ -68,4 +96,28 @@ class SearchQuery extends _$SearchQuery {
   String build() => '';
 
   void setQuery(String query) => state = query;
+}
+
+@riverpod
+Future<List<Movie>> favoriteMovies(ref) {
+  return ref.watch(movieRepositoryProvider).getFavoriteMovies();
+}
+
+@riverpod
+class FavoriteStatus extends _$FavoriteStatus {
+  @override
+  Future<bool> build(int movieId) async {
+    return ref.watch(movieRepositoryProvider).isMovieFavorite(movieId);
+  }
+
+  Future<void> toggleFavorite(Movie movie) async {
+    final isFav = await ref.read(movieRepositoryProvider).isMovieFavorite(movie.id);
+    if (isFav) {
+      await ref.read(movieRepositoryProvider).removeMovieFromFavorites(movie.id);
+    } else {
+      await ref.read(movieRepositoryProvider).addMovieToFavorites(movie);
+    }
+    state = AsyncData(!isFav);
+    ref.invalidate(favoriteMoviesProvider);
+  }
 }
