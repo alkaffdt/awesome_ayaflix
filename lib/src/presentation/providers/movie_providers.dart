@@ -36,18 +36,27 @@ MovieRepository movieRepository(ref) {
 }
 
 @riverpod
-Future<MovieDetail> movieDetail(ref, int movieId) {
-  return ref.watch(movieRepositoryProvider).getMovieDetail(movieId);
+Future<MovieDetail> movieDetail(ref, int movieId) async {
+  final result = await ref
+      .watch(movieRepositoryProvider)
+      .getMovieDetail(movieId);
+  return result.fold((failure) => throw failure, (movieDetail) => movieDetail);
 }
 
 @riverpod
-Future<List<Cast>> movieCredits(ref, int movieId) {
-  return ref.watch(movieRepositoryProvider).getMovieCredits(movieId);
+Future<List<Cast>> movieCredits(ref, int movieId) async {
+  final result = await ref
+      .watch(movieRepositoryProvider)
+      .getMovieCredits(movieId);
+  return result.fold((failure) => throw failure, (cast) => cast);
 }
 
 @riverpod
-Future<List<Video>> movieVideos(ref, int movieId) {
-  return ref.watch(movieRepositoryProvider).getMovieVideos(movieId);
+Future<List<Video>> movieVideos(ref, int movieId) async {
+  final result = await ref
+      .watch(movieRepositoryProvider)
+      .getMovieVideos(movieId);
+  return result.fold((failure) => throw failure, (videos) => videos);
 }
 
 @riverpod
@@ -104,8 +113,9 @@ class SearchQuery extends _$SearchQuery {
 }
 
 @riverpod
-Future<List<Movie>> favoriteMovies(ref) {
-  return ref.watch(movieRepositoryProvider).getFavoriteMovies();
+Future<List<Movie>> favoriteMovies(ref) async {
+  final result = await ref.watch(movieRepositoryProvider).getFavoriteMovies();
+  return result.fold((failure) => [], (movies) => movies);
 }
 
 @riverpod
