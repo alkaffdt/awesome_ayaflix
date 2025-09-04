@@ -1,3 +1,4 @@
+import 'package:awesome_ayaflix/src/presentation/screens/movies_screen/widgets/movie_screen_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:awesome_ayaflix/src/presentation/providers/movie_providers.dart';
@@ -60,47 +61,11 @@ class _MoviesScreenState extends ConsumerState<MoviesScreen> {
         : ref.watch(searchMoviesProvider(searchQuery));
 
     return Scaffold(
+      appBar: MovieSearchAppBar(_scrollController),
       body: CustomScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         controller: _scrollController,
         slivers: [
-          SliverAppBar(
-            title: const Text('Ayaflix'),
-            floating: true,
-            pinned: true,
-            snap: false,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.favorite),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FavoritesScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(kToolbarHeight),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  style: const TextStyle(color: Colors.black),
-                  onChanged: (query) {
-                    ref.read(searchQueryProvider.notifier).setQuery(query);
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search movies...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
           movies.when(
             data: (movies) {
               return SliverGrid(

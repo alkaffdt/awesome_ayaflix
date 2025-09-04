@@ -1,5 +1,5 @@
 import 'package:awesome_ayaflix/src/data/models/favorite_movie.dart';
-import 'package:awesome_ayaflix/src/presentation/screens/movies_screen.dart';
+import 'package:awesome_ayaflix/src/presentation/screens/movies_screen/movies_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -31,6 +31,15 @@ class MyApp extends StatelessWidget {
       title: 'Ayaflix',
       theme: ThemeData.dark().copyWith(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        appBarTheme: const AppBarTheme(
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.black,
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       home: const MoviesScreen(),
     );
