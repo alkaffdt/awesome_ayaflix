@@ -1,4 +1,3 @@
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:awesome_ayaflix/src/domain/entities/video.dart';
 
@@ -15,11 +14,11 @@ class VideoModel with _$VideoModel {
     required String type,
   }) = _VideoModel;
 
+  const VideoModel._();
+
   factory VideoModel.fromJson(Map<String, dynamic> json) =>
       _$VideoModelFromJson(json);
-}
 
-extension VideoModelX on VideoModel {
   Video toEntity() {
     return Video(
       id: id,

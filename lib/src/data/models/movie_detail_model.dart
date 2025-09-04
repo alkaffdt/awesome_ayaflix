@@ -1,4 +1,3 @@
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:awesome_ayaflix/src/domain/entities/movie_detail.dart';
 
@@ -19,22 +18,11 @@ class MovieDetailModel with _$MovieDetailModel {
     required List<GenreModel> genres,
   }) = _MovieDetailModel;
 
+  const MovieDetailModel._();
+
   factory MovieDetailModel.fromJson(Map<String, dynamic> json) =>
       _$MovieDetailModelFromJson(json);
-}
 
-@freezed
-class GenreModel with _$GenreModel {
-  const factory GenreModel({
-    required int id,
-    required String name,
-  }) = _GenreModel;
-
-  factory GenreModel.fromJson(Map<String, dynamic> json) =>
-      _$GenreModelFromJson(json);
-}
-
-extension MovieDetailModelX on MovieDetailModel {
   MovieDetail toEntity() {
     return MovieDetail(
       id: id,
@@ -48,4 +36,15 @@ extension MovieDetailModelX on MovieDetailModel {
       genres: genres.map((e) => e.name).toList(),
     );
   }
+}
+
+@freezed
+class GenreModel with _$GenreModel {
+  const factory GenreModel({
+    required int id,
+    required String name,
+  }) = _GenreModel;
+
+  factory GenreModel.fromJson(Map<String, dynamic> json) =>
+      _$GenreModelFromJson(json);
 }

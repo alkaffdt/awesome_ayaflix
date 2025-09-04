@@ -1,17 +1,19 @@
-
+import 'package:awesome_ayaflix/src/core/error/failure.dart';
 import 'package:awesome_ayaflix/src/data/datasources/remote/api_constants.dart';
 import 'package:awesome_ayaflix/src/data/datasources/remote/dio_client.dart';
 import 'package:awesome_ayaflix/src/data/models/cast_model.dart';
 import 'package:awesome_ayaflix/src/data/models/movie_detail_model.dart';
 import 'package:awesome_ayaflix/src/data/models/movie_model.dart';
 import 'package:awesome_ayaflix/src/data/models/video_model.dart';
+import 'package:dio/dio.dart';
+import 'package:fpdart/fpdart.dart';
 
 abstract class MovieRemoteDataSource {
-  Future<List<MovieModel>> getPopularMovies({int page = 1});
-  Future<List<MovieModel>> searchMovies(String query, {int page = 1});
-  Future<MovieDetailModel> getMovieDetail(int movieId);
-  Future<List<CastModel>> getMovieCredits(int movieId);
-  Future<List<VideoModel>> getMovieVideos(int movieId);
+  Future<Either<Failure, List<MovieModel>>> getPopularMovies({int page = 1});
+  Future<Either<Failure, List<MovieModel>>> searchMovies(String query, {int page = 1});
+  Future<Either<Failure, MovieDetailModel>> getMovieDetail(int movieId);
+  Future<Either<Failure, List<CastModel>>> getMovieCredits(int movieId);
+  Future<Either<Failure, List<VideoModel>>> getMovieVideos(int movieId);
 }
 
 class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
@@ -20,7 +22,7 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
   MovieRemoteDataSourceImpl(this._dioClient);
 
   @override
-  Future<List<MovieModel>> getPopularMovies({int page = 1}) async {
+  Future<Either<Failure, List<MovieModel>>> getPopularMovies({int page = 1}) async {
     try {
       final response = await _dioClient.dio.get(
         ApiConstants.popularMovies,
@@ -29,14 +31,16 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
       final movies = (response.data['results'] as List)
           .map((e) => MovieModel.fromJson(e))
           .toList();
-      return movies;
+      return Right(movies);
+    } on DioException catch (e) {
+      return Left(Failure(_handleDioError(e)));
     } catch (e) {
-      rethrow;
+      return Left(Failure(e.toString()));
     }
   }
 
   @override
-  Future<List<MovieModel>> searchMovies(String query, {int page = 1}) async {
+  Future<Either<Failure, List<MovieModel>>> searchMovies(String query, {int page = 1}) async {
     try {
       final response = await _dioClient.dio.get(
         ApiConstants.searchMovies,
@@ -45,26 +49,30 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
       final movies = (response.data['results'] as List)
           .map((e) => MovieModel.fromJson(e))
           .toList();
-      return movies;
+      return Right(movies);
+    } on DioException catch (e) {
+      return Left(Failure(_handleDioError(e)));
     } catch (e) {
-      rethrow;
+      return Left(Failure(e.toString()));
     }
   }
 
   @override
-  Future<MovieDetailModel> getMovieDetail(int movieId) async {
+  Future<Either<Failure, MovieDetailModel>> getMovieDetail(int movieId) async {
     try {
       final response = await _dioClient.dio.get(
         '${ApiConstants.movieDetail}/$movieId',
       );
-      return MovieDetailModel.fromJson(response.data);
+      return Right(MovieDetailModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(Failure(_handleDioError(e)));
     } catch (e) {
-      rethrow;
+      return Left(Failure(e.toString()));
     }
   }
 
   @override
-  Future<List<CastModel>> getMovieCredits(int movieId) async {
+  Future<Either<Failure, List<CastModel>>> getMovieCredits(int movieId) async {
     try {
       final response = await _dioClient.dio.get(
         '${ApiConstants.movieDetail}/$movieId/credits',
@@ -72,14 +80,16 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
       final cast = (response.data['cast'] as List)
           .map((e) => CastModel.fromJson(e))
           .toList();
-      return cast;
+      return Right(cast);
+    } on DioException catch (e) {
+      return Left(Failure(_handleDioError(e)));
     } catch (e) {
-      rethrow;
+      return Left(Failure(e.toString()));
     }
   }
 
   @override
-  Future<List<VideoModel>> getMovieVideos(int movieId) async {
+  Future<Either<Failure, List<VideoModel>>> getMovieVideos(int movieId) async {
     try {
       final response = await _dioClient.dio.get(
         '${ApiConstants.movieDetail}/$movieId/videos',
@@ -87,9 +97,32 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
       final videos = (response.data['results'] as List)
           .map((e) => VideoModel.fromJson(e))
           .toList();
-      return videos;
+      return Right(videos);
+    } on DioException catch (e) {
+      return Left(Failure(_handleDioError(e)));
     } catch (e) {
-      rethrow;
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  String _handleDioError(DioException error) {
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+        return 'Connection timeout. Please check your internet connection.';
+      case DioExceptionType.sendTimeout:
+        return 'Send timeout. Please try again later.';
+      case DioExceptionType.receiveTimeout:
+        return 'Receive timeout. Please try again later.';
+      case DioExceptionType.badResponse:
+        return 'Received invalid status code: ${error.response?.statusCode}';
+      case DioExceptionType.cancel:
+        return 'Request to API server was cancelled.';
+      case DioExceptionType.connectionError:
+        return 'Connection error. Please check your internet connection.';
+      case DioExceptionType.unknown:
+        return 'An unexpected error occurred. Please try again later.';
+      default:
+        return 'Something went wrong. Please try again later.';
     }
   }
 }

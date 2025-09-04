@@ -148,13 +148,14 @@ class __$$VideoModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$VideoModelImpl implements _VideoModel {
+class _$VideoModelImpl extends _VideoModel {
   const _$VideoModelImpl(
       {required this.id,
       required this.key,
       required this.name,
       required this.site,
-      required this.type});
+      required this.type})
+      : super._();
 
   factory _$VideoModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$VideoModelImplFromJson(json);
@@ -207,13 +208,14 @@ class _$VideoModelImpl implements _VideoModel {
   }
 }
 
-abstract class _VideoModel implements VideoModel {
+abstract class _VideoModel extends VideoModel {
   const factory _VideoModel(
       {required final String id,
       required final String key,
       required final String name,
       required final String site,
       required final String type}) = _$VideoModelImpl;
+  const _VideoModel._() : super._();
 
   factory _VideoModel.fromJson(Map<String, dynamic> json) =
       _$VideoModelImpl.fromJson;

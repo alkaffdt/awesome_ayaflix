@@ -145,12 +145,13 @@ class __$$CastModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$CastModelImpl implements _CastModel {
+class _$CastModelImpl extends _CastModel {
   const _$CastModelImpl(
       {required this.id,
       required this.name,
       @JsonKey(name: 'profile_path') required this.profilePath,
-      required this.character});
+      required this.character})
+      : super._();
 
   factory _$CastModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$CastModelImplFromJson(json);
@@ -204,12 +205,13 @@ class _$CastModelImpl implements _CastModel {
   }
 }
 
-abstract class _CastModel implements CastModel {
+abstract class _CastModel extends CastModel {
   const factory _CastModel(
       {required final int id,
       required final String name,
       @JsonKey(name: 'profile_path') required final String? profilePath,
       required final String character}) = _$CastModelImpl;
+  const _CastModel._() : super._();
 
   factory _CastModel.fromJson(Map<String, dynamic> json) =
       _$CastModelImpl.fromJson;

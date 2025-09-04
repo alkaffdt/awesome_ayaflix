@@ -1,4 +1,3 @@
-
 import 'package:awesome_ayaflix/src/data/datasources/local/movie_local_data_source.dart';
 import 'package:awesome_ayaflix/src/data/datasources/remote/dio_client.dart';
 import 'package:awesome_ayaflix/src/data/datasources/remote/movie_remote_data_source.dart';
@@ -58,8 +57,11 @@ class PopularMovies extends _$PopularMovies {
     return _fetchPage(1);
   }
 
-  Future<List<Movie>> _fetchPage(int page) {
-    return ref.read(movieRepositoryProvider).getPopularMovies(page: page);
+  Future<List<Movie>> _fetchPage(int page) async {
+    final result = await ref
+        .read(movieRepositoryProvider)
+        .getPopularMovies(page: page);
+    return result.fold((failure) => [], (movies) => movies);
   }
 
   Future<void> fetchNextPage() async {
@@ -79,8 +81,11 @@ class SearchMovies extends _$SearchMovies {
     return _fetchPage(query, 1);
   }
 
-  Future<List<Movie>> _fetchPage(String query, int page) {
-    return ref.read(movieRepositoryProvider).searchMovies(query, page: page);
+  Future<List<Movie>> _fetchPage(String query, int page) async {
+    final result = await ref
+        .read(movieRepositoryProvider)
+        .searchMovies(query, page: page);
+    return result.fold((failure) => [], (movies) => movies);
   }
 
   Future<void> fetchNextPage(String query) async {
@@ -107,13 +112,21 @@ Future<List<Movie>> favoriteMovies(ref) {
 class FavoriteStatus extends _$FavoriteStatus {
   @override
   Future<bool> build(int movieId) async {
-    return ref.watch(movieRepositoryProvider).isMovieFavorite(movieId);
+    final result = await ref
+        .read(movieRepositoryProvider)
+        .isMovieFavorite(movieId);
+    return result.fold((failure) => false, (isFav) => isFav);
   }
 
   Future<void> toggleFavorite(Movie movie) async {
-    final isFav = await ref.read(movieRepositoryProvider).isMovieFavorite(movie.id);
+    final result = await ref
+        .read(movieRepositoryProvider)
+        .isMovieFavorite(movie.id);
+    final isFav = result.fold((failure) => false, (isFav) => isFav);
     if (isFav) {
-      await ref.read(movieRepositoryProvider).removeMovieFromFavorites(movie.id);
+      await ref
+          .read(movieRepositoryProvider)
+          .removeMovieFromFavorites(movie.id);
     } else {
       await ref.read(movieRepositoryProvider).addMovieToFavorites(movie);
     }

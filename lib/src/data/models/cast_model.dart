@@ -1,4 +1,3 @@
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:awesome_ayaflix/src/domain/entities/cast.dart';
 
@@ -14,11 +13,11 @@ class CastModel with _$CastModel {
     required String character,
   }) = _CastModel;
 
+  const CastModel._();
+
   factory CastModel.fromJson(Map<String, dynamic> json) =>
       _$CastModelFromJson(json);
-}
 
-extension CastModelX on CastModel {
   Cast toEntity() {
     return Cast(
       id: id,

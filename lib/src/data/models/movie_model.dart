@@ -1,4 +1,3 @@
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:awesome_ayaflix/src/domain/entities/movie.dart';
 
@@ -16,10 +15,10 @@ class MovieModel with _$MovieModel {
     @JsonKey(name: 'vote_average') required double voteAverage,
   }) = _MovieModel;
 
-  factory MovieModel.fromJson(Map<String, dynamic> json) => _$MovieModelFromJson(json);
-}
+  const MovieModel._();
 
-extension MovieModelX on MovieModel {
+  factory MovieModel.fromJson(Map<String, dynamic> json) => _$MovieModelFromJson(json);
+
   Movie toEntity() {
     return Movie(
       id: id,
