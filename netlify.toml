@@ -1,0 +1,8 @@
+[build]
+  publish = "build/web"
+  command = """
+    git clone https://github.com/flutter/flutter.git -b 3.32.8
+    export PATH="$PATH:$(pwd)/flutter/bin"
+    flutter --version
+    flutter build web --release
+  """
