@@ -53,7 +53,7 @@ endpoints include:
 To get a local copy up and running, follow these simple steps.
 
 ### Prerequisites
--   Flutter SDK installed (ensure you have the latest stable version).
+-   Flutter SDK installed (currently using : Flutter 3.32.8).
 -   Dart SDK (comes with Flutter).
 -   A code editor like VS Code or Android Studio.
 
