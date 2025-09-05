@@ -1,5 +1,5 @@
 import 'package:awesome_ayaflix/src/presentation/providers/movie_providers.dart';
-import 'package:awesome_ayaflix/src/presentation/screens/favorites_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,7 +7,7 @@ class MovieSearchAppBar extends ConsumerStatefulWidget
     implements PreferredSizeWidget {
   const MovieSearchAppBar(this.scrollController, {super.key});
 
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
 
   @override
   ConsumerState<MovieSearchAppBar> createState() => _MovieSearchAppBarState();
@@ -48,11 +48,13 @@ class _MovieSearchAppBarState extends ConsumerState<MovieSearchAppBar> {
                   ),
                 ),
                 onChanged: (query) {
-                  widget.scrollController.animateTo(
-                    widget.scrollController.position.minScrollExtent,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
+                  if (widget.scrollController != null) {
+                    widget.scrollController?.animateTo(
+                      widget.scrollController!.position.minScrollExtent,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  }
 
                   ref.read(searchQueryProvider.notifier).setQuery(query);
                 },
@@ -68,16 +70,6 @@ class _MovieSearchAppBarState extends ConsumerState<MovieSearchAppBar> {
       ),
       actionsPadding: const EdgeInsets.only(top: 16),
       actions: [
-        IconButton(
-          color: Colors.white,
-          icon: const Icon(Icons.star),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const FavoritesScreen()),
-            );
-          },
-        ),
         IconButton(
           icon: Icon(_showSearch ? Icons.close : Icons.search),
           onPressed: () {

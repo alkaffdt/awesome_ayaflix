@@ -2,7 +2,7 @@ import 'package:awesome_ayaflix/src/presentation/screens/movies_screen/widgets/m
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:awesome_ayaflix/src/presentation/providers/movie_providers.dart';
-import 'package:awesome_ayaflix/src/presentation/screens/favorites_screen.dart';
+
 import 'package:awesome_ayaflix/src/presentation/widgets/movie_card_widget.dart';
 import 'package:awesome_ayaflix/src/presentation/widgets/movie_card_shimmer.dart';
 
@@ -10,12 +10,14 @@ class MoviesScreen extends ConsumerStatefulWidget {
   const MoviesScreen({super.key});
 
   @override
-  ConsumerState<MoviesScreen> createState() => _MoviesScreenState();
+  MoviesScreenState createState() => MoviesScreenState();
 }
 
-class _MoviesScreenState extends ConsumerState<MoviesScreen> {
+class MoviesScreenState extends ConsumerState<MoviesScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
+
+  ScrollController get scrollController => _scrollController;
 
   @override
   void initState() {
@@ -60,20 +62,20 @@ class _MoviesScreenState extends ConsumerState<MoviesScreen> {
         ? ref.watch(popularMoviesProvider)
         : ref.watch(searchMoviesProvider(searchQuery));
 
-    return Scaffold(
-      appBar: MovieSearchAppBar(_scrollController),
-      body: CustomScrollView(
+    return LayoutBuilder(builder: (context, constraints) {
+      final crossAxisCount = (constraints.maxWidth / 180).floor();
+      return CustomScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         controller: _scrollController,
         slivers: [
           movies.when(
             data: (movies) {
-              return SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
+              return SliverGrid.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
                   childAspectRatio: 0.7,
                 ),
-                delegate: SliverChildBuilderDelegate((context, index) {
+                itemBuilder: (context, index) {
                   if (index == movies.length) {
                     return _isLoadingMore
                         ? const Center(child: CircularProgressIndicator())
@@ -81,19 +83,18 @@ class _MoviesScreenState extends ConsumerState<MoviesScreen> {
                   }
                   final movie = movies[index];
                   return MovieCard(movie: movie);
-                }, childCount: movies.length + 1),
+                },
+                itemCount: movies.length + 1,
               );
             },
             loading: () {
-              return SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
+              return SliverGrid.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
                   childAspectRatio: 0.7,
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => const MovieCardShimmer(),
-                  childCount: 10,
-                ),
+                itemBuilder: (context, index) => const MovieCardShimmer(),
+                itemCount: 10,
               );
             },
             error: (error, stackTrace) {
@@ -103,7 +104,7 @@ class _MoviesScreenState extends ConsumerState<MoviesScreen> {
             },
           ),
         ],
-      ),
-    );
+      );
+    });
   }
 }

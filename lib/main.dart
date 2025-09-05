@@ -1,3 +1,4 @@
+import 'package:awesome_ayaflix/src/presentation/screens/main_screen.dart';
 import 'package:awesome_ayaflix/src/data/models/favorite_movie.dart';
 import 'package:awesome_ayaflix/src/presentation/screens/movies_screen/movies_screen.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const MoviesScreen(),
+      home: const MainScreen(),
     );
   }
 }
